@@ -45,7 +45,7 @@ def item_rating_dict(training_file):
     item_avg_rating = {item: sum(ratings)/len(ratings) for item, ratings in item_avg_rating.items()}
     return item_avg_rating
 
-
+"""
 def weight_similar(items_to_customers, customers_to_items):
     customer_weighted_similar = {}
     for customer, purchases in tqdm(customers_to_items.items()):
@@ -57,7 +57,7 @@ def weight_similar(items_to_customers, customers_to_items):
 
         customer_weighted_similar[customer] = similar_customers
     return customer_weighted_similar
-
+"""
 
 def load_data(datafile):
     if datafile == "cust_similar.p":

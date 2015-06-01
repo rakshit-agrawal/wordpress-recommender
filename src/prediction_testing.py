@@ -1,5 +1,3 @@
-__author__ = 'jason'
-
 
 def fscore(test_file, true_file):
     test = open(test_file, "r")

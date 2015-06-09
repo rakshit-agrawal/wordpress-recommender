@@ -12,6 +12,20 @@ File for data fetch operations
 """
 
 
+def normalize_dict(data_dict):
+    new_dict = {}
+    for k,v in data_dict.iteritems():
+        sum = 0
+        new_dict[k] = {}
+        if v is not None:
+            for j,b in v.iteritems():
+                sum+=b
+            for j,b in v.iteritems():
+                b = 0.0 + (0.0 + b/(0.0 + sum))
+                new_dict[k][j] = b
+    return new_dict
+
+
 class DataFetch:
 
     def __init__(self):
@@ -41,6 +55,7 @@ class DataFetch:
                 print("generating <user_author>")
                 self.read_file(POST_DATA_FILE,type="author")
                 print("dumping to data store")
+                self.user_author = normalize_dict(self.user_author)
                 pickle.dump(self.user_author, open("user_author.p", "wb"))
                 print("data dumped")
                 return self.user_author
@@ -54,6 +69,7 @@ class DataFetch:
             else:
                 print("generating <user_blog>")
                 self.read_file(POST_DATA_FILE,type="blog")
+                self.user_blog = normalize_dict(self.user_blog)
                 print("dumping to data store")
                 pickle.dump(self.user_blog, open("user_blog.p", "wb"))
                 print("data dumped")
@@ -68,6 +84,7 @@ class DataFetch:
             else:
                 print("generating <user_tags>")
                 self.read_file(POST_DATA_FILE,type="tags")
+                self.user_tags = normalize_dict(self.user_tags)
                 print("dumping to data store")
                 pickle.dump(self.user_tags, open("user_tags.p", "wb"))
                 print("data dumped")
@@ -78,6 +95,8 @@ class DataFetch:
         f = open(filename, 'r')
         strf = f.read()
         strarr = strf.split('\n')
+        if NVAL:
+            strarr = strarr[:NVAL]
         #self.file_parse(strarr)
 
 
@@ -117,7 +136,7 @@ class DataFetch:
                     else:
                         self.user_blog[uid] = {}
                         self.user_blog[uid][blog_id] = 1
-                        
+
                 elif type=="author":
 
                     if(self.user_author.has_key(uid)):
@@ -133,16 +152,22 @@ class DataFetch:
 
                     if(self.user_tags.has_key(uid)):
                         for tag in tags:
-                            tag = lower(tag)
-                            if tag in self.user_tags[uid]:
-                                self.user_tags[uid][tag]+=1
-                            else:
-                                self.user_tags[uid][tag] = 1
+                            try:
+                                tag = lower(tag)
+                                if tag in self.user_tags[uid]:
+                                    self.user_tags[uid][tag]+=1
+                                else:
+                                    self.user_tags[uid][tag] = 1
+                            except Exception, e:
+                                pass
                     else:
                         for tag in tags:
-                            tag = lower(tag)
-                            self.user_tags[uid] = {}
-                            self.user_tags[uid][tag] = 1
+                            try:
+                                tag = lower(tag)
+                                self.user_tags[uid] = {}
+                                self.user_tags[uid][tag] = 1
+                            except Exception,e:
+                                pass
 
 
 
@@ -165,15 +190,23 @@ class DataFetch:
 
 
 if __name__ == "__main__":
-    POST_DATA_FILE = "../data/sample011.json" # 5000 lines from trainPosts
+    POST_DATA_FILE = "../data/trainPosts.json"
+
+    NVAL = 50000 # To limit data
+
+    USER_AUTHOR = "user_author.p"
+    USER_BLOG = "user_blog.p"
+    USER_TAGS = "user_tags.p"
 
     c = DataFetch()
     #c.read_file(POST_DATA_FILE)
     t1 = datetime.now()
-    data_dict = c.load_data("user_tags.p")
+    data_dict = c.load_data(USER_TAGS)
+    #normal_dict = normalize_dict(data_dict)
     t2 = datetime.now()
     for k,v in data_dict.iteritems():
         print k
         print v
+    print len(data_dict)
     print "time taken" + str(t2-t1)
     #c.print_lists()

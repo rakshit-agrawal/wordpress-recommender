@@ -11,6 +11,7 @@ USER_AUTHOR = "user_author.p"
 USER_BLOG = "user_blog.p"
 USER_TAGS = "user_tags.p"
 USER_LANGUAGE = "user_language.p"
+TEST_SAMPLE_FILE = "test_sample.p"
 
 
 class Predictions:
@@ -23,8 +24,10 @@ class Predictions:
         self.ut = self.df.load_data(USER_TAGS)
         self.ul = self.df.load_data(USER_LANGUAGE)
 
-        self.posts = pickle.load(open("posts_dict_complete.p", "rb"))
+        self.posts = pickle.load(open("posts_dict_all.p", "rb"))
 
+
+        self.test_sample = pickle.load(TEST_SAMPLE_FILE)
 
         self.a_coef = 0.33
         self.b_coef = 0.33
@@ -148,7 +151,8 @@ if __name__=="__main__":
     POST_DATA_FILE = "../data/trainPosts.json"
 
     c = Predictions()
-    TEST_SAMPLE = new_test(POST_DATA_FILE)
+    # TEST_SAMPLE = new_test(POST_DATA_FILE)
+    TEST_SAMPLE = c.test_sample
     predicted_list = c.no_logic(TEST_SAMPLE)
 
     actual = []

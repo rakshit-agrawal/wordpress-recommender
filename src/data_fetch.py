@@ -126,10 +126,6 @@ class DataFetch:
         NVAL = self.NVAL
         if NVAL:
             strarr = strarr[:NVAL]
-        #self.file_parse(strarr)
-
-
-    #def file_parse(self, strarr):
 
         for i,v in enumerate(strarr):
             # Extract elements from json here.
@@ -144,11 +140,11 @@ class DataFetch:
             tags = v["tags"]
             language = v["language"]
 
-            self.posts_dict[post_id] = {}
+            #self.posts_dict[post_id] = {}
             #self.posts_dict[post_id]["blog"] = blog_id
             #self.posts_dict[post_id]["author"] = author
             #self.posts_dict[post_id]["tags"] = tags
-            self.posts_dict[post_id] = v
+            #self.posts_dict[post_id] = v
 
             self.post_list.add(post_id)
             self.blog_list.add(blog_id)
@@ -163,67 +159,80 @@ class DataFetch:
             for el in users:
                 uid = el["uid"]
 
-                # Create test files
-                #if random.randint(1,10)>8:
-                    # Add entry into test list
-                #    self.test_sample.append((uid,post_id,1))
+                flag = 0
 
-                if type=="blog":
+                if os.path.isfile("test_sample.p"):
+                    self.test_sample = pickle.load(open("test_sample.p", "rb"))
 
-                    if(self.user_blog.has_key(uid)):
-                        if blog_id in self.user_blog[uid]:
-                            self.user_blog[uid][blog_id]+=1
+                    if (uid,post_id,blog_id, author, tags,1) in self.test_sample:
+                        flag = 1
+
+                else:
+                    if random.randint(1,10)>8:
+                        # Create test files
+
+                        # Add entry into test list
+                        self.test_sample.append((uid,post_id,blog_id, author, tags,1))
+                        flag = 1
+
+                if flag==0:
+                    # Put into training
+                    if type=="blog":
+
+                        if(self.user_blog.has_key(uid)):
+                            if blog_id in self.user_blog[uid]:
+                                self.user_blog[uid][blog_id]+=1
+                            else:
+                                self.user_blog[uid][blog_id] = 1
                         else:
+                            self.user_blog[uid] = {}
                             self.user_blog[uid][blog_id] = 1
-                    else:
-                        self.user_blog[uid] = {}
-                        self.user_blog[uid][blog_id] = 1
 
-                elif type=="language":
+                    elif type=="language":
 
-                    if(self.user_language.has_key(uid)):
-                        if language in self.user_language[uid]:
-                            self.user_language[uid][language]+=1
+                        if(self.user_language.has_key(uid)):
+                            if language in self.user_language[uid]:
+                                self.user_language[uid][language]+=1
+                            else:
+                                self.user_language[uid][language] = 1
                         else:
+                            self.user_language[uid] = {}
                             self.user_language[uid][language] = 1
-                    else:
-                        self.user_language[uid] = {}
-                        self.user_language[uid][language] = 1
 
-                elif type=="author":
+                    elif type=="author":
 
-                    if(self.user_author.has_key(uid)):
-                        if author in self.user_author[uid]:
-                            self.user_author[uid][author]+=1
+                        if(self.user_author.has_key(uid)):
+                            if author in self.user_author[uid]:
+                                self.user_author[uid][author]+=1
+                            else:
+                                self.user_author[uid][author] = 1
                         else:
+                            self.user_author[uid] = {}
                             self.user_author[uid][author] = 1
-                    else:
-                        self.user_author[uid] = {}
-                        self.user_author[uid][author] = 1
 
-                elif type=="tags":
+                    elif type=="tags":
 
-                    if(self.user_tags.has_key(uid)):
-                        for tag in tags:
-                            try:
-                                tag = lower(tag)
-                                if tag in self.user_tags[uid]:
-                                    self.user_tags[uid][tag]+=1
-                                else:
+                        if(self.user_tags.has_key(uid)):
+                            for tag in tags:
+                                try:
+                                    tag = lower(tag)
+                                    if tag in self.user_tags[uid]:
+                                        self.user_tags[uid][tag]+=1
+                                    else:
+                                        self.user_tags[uid][tag] = 1
+                                except Exception, e:
+                                    pass
+                        else:
+                            for tag in tags:
+                                try:
+                                    tag = lower(tag)
+                                    self.user_tags[uid] = {}
                                     self.user_tags[uid][tag] = 1
-                            except Exception, e:
-                                pass
-                    else:
-                        for tag in tags:
-                            try:
-                                tag = lower(tag)
-                                self.user_tags[uid] = {}
-                                self.user_tags[uid][tag] = 1
-                            except Exception,e:
-                                pass
+                                except Exception,e:
+                                    pass
 
-        # Put posts_dict into a pickle
-        pickle.dump(self.posts_dict, open("posts_dict.p", "wb"))
+             # Put tests into a pickle
+            pickle.dump(self.test_sample, open("test_sample.p", "wb"))
 
 
 

@@ -5,3 +5,4 @@ src/out*
 *.p
 ## Directory-based project format:
 .idea/
+*.bak

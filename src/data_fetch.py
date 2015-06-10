@@ -111,7 +111,7 @@ class DataFetch:
                 return user_language
             else:
                 print("generating <user_language>")
-                self.read_file(self.POST_DATA_FILE,type="tags")
+                self.read_file(self.POST_DATA_FILE,type="language")
                 self.user_language = normalize_dict(self.user_language)
                 print("dumping to data store")
                 pickle.dump(self.user_language, open("user_language.p", "wb"))
@@ -130,6 +130,7 @@ class DataFetch:
         for i,v in enumerate(strarr):
             # Extract elements from json here.
             try:
+                print "In json loads"
                 v = json.loads(v)
             except:
                 continue
@@ -192,12 +193,12 @@ class DataFetch:
 
                         if(self.user_language.has_key(uid)):
                             if language in self.user_language[uid]:
-                                self.user_language[uid][language]+=1
+                                pass
                             else:
-                                self.user_language[uid][language] = 1
+                                self.user_language[uid].add(language)
                         else:
-                            self.user_language[uid] = {}
-                            self.user_language[uid][language] = 1
+                            self.user_language[uid] = set()
+                            self.user_language[uid].add(language)
 
                     elif type=="author":
 
@@ -216,6 +217,7 @@ class DataFetch:
                             for tag in tags:
                                 try:
                                     tag = lower(tag)
+                                    print unicode(tag)
                                     if tag in self.user_tags[uid]:
                                         self.user_tags[uid][tag]+=1
                                     else:

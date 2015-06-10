@@ -3,6 +3,7 @@ import random
 import json
 from data_fetch import DataFetch
 from average_precision import mapk, apk
+import numpy as np
 
 __author__ = 'rakshit'
 
@@ -22,16 +23,47 @@ class Predictions:
         self.ua = self.df.load_data(USER_AUTHOR)
         self.ub = self.df.load_data(USER_BLOG)
         self.ut = self.df.load_data(USER_TAGS)
-        self.ul = self.df.load_data(USER_LANGUAGE)
+        #self.ul = self.df.load_data(USER_LANGUAGE)
 
         self.posts = pickle.load(open("posts_dict_all.p", "rb"))
 
 
-        self.test_sample = pickle.load(TEST_SAMPLE_FILE)
+        self.test_sample = pickle.load(open(TEST_SAMPLE_FILE,"rb"))
 
         self.a_coef = 0.33
         self.b_coef = 0.33
         self.t_coef = 0.33
+
+
+    def logistic(self):
+
+        dimx = len(self.ua)
+
+        dimy = 3
+
+        ymat = np.zeros((dimx, dimy))
+
+        ctr = 0
+        for k,v in self.ua.iteritems():
+            user = k
+            a_val = v
+            try:
+                b_val = self.ub[user]
+            except:
+                b_val = 0.0
+            try:
+                t_val = self.ut[user]
+            except:
+                t_val = 0.0
+
+            ymat[ctr][0] = a_val
+            ymat[ctr][1] = b_val
+            ymat[ctr][2] = t_val
+            ctr+=1
+
+        print ymat
+
+
 
 
     def no_logic(self, test_sample):
@@ -57,8 +89,10 @@ class Predictions:
                     except:
                         t_val+= 0.0
 
-            except:
+            except Exception, e:
                 print "In except"
+                print e
+                print len(self.posts)
                 A = a
                 B = b
                 T = t
@@ -86,7 +120,7 @@ class Predictions:
 
 
 
-            print "Values for a_val {}, b_val {} and t_val {}".format(a_val,b_val,t_val)
+            #print "Values for a_val {}, b_val {} and t_val {}".format(a_val,b_val,t_val)
             val = 0.0 + (self.a_coef * a_val) + (self.b_coef * b_val) + (self.t_coef * t_val)
 
             if val>threshold:
@@ -145,6 +179,27 @@ def new_test(filename):
                 test_sample.append((uid,post_id,blog_id, author, tags,1))
     return test_sample
 
+def fscore(actual, predicted):
+    true_positive = 0
+    false_positive = 0
+    false_negative = 0
+    for i in range(len(actual)):
+        if predicted[i] == 1:
+            if actual[i] == 0:
+                false_positive += 1
+            else:
+                true_positive += 1
+        else:
+            if actual[i] == 1:
+                false_negative += 1
+
+    precision = 0.0 + (true_positive/(true_positive+false_positive))
+    recall = 0.0 + (true_positive/(true_positive+false_negative))
+    fscore = 0.0 + (2*precision*recall/(precision+recall))
+
+    print precision, recall, fscore
+    return fscore
+
 if __name__=="__main__":
 
     TEST_SAMPLE = [(31367867,1329369)]
@@ -167,3 +222,10 @@ if __name__=="__main__":
     print "Mean Average Precision at 10"
     print map_val
 
+    fscore = fscore(actual, predicted)
+
+    print "F-score"
+    print fscore
+
+
+    logistic = c.logistic()

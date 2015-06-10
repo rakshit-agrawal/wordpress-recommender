@@ -6,3 +6,4 @@ src/out*
 ## Directory-based project format:
 .idea/
 *.bak
+*.pyc

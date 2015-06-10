@@ -1,5 +1,6 @@
 import json
 import os
+import random
 from string import lower
 from datetime import datetime
 import numpy as np
@@ -28,6 +29,12 @@ def normalize_dict(data_dict):
 
 class DataFetch:
 
+
+    POST_DATA_FILE = "../data/trainPosts.json"
+
+    NVAL = 50000 # To limit data
+
+
     def __init__(self):
         self.user_list = set()
         self.post_list = set()
@@ -39,6 +46,11 @@ class DataFetch:
         self.user_blog = {}
         self.user_post = {}
         self.user_tags = {}
+        self.user_language = {}
+
+        self.posts_dict = {}
+
+        self.test_sample = []
 
     def check_pickles(self):
         # Check for existence of pickles
@@ -53,7 +65,7 @@ class DataFetch:
                 return user_author
             else:
                 print("generating <user_author>")
-                self.read_file(POST_DATA_FILE,type="author")
+                self.read_file(self.POST_DATA_FILE,type="author")
                 print("dumping to data store")
                 self.user_author = normalize_dict(self.user_author)
                 pickle.dump(self.user_author, open("user_author.p", "wb"))
@@ -68,7 +80,7 @@ class DataFetch:
                 return user_blog
             else:
                 print("generating <user_blog>")
-                self.read_file(POST_DATA_FILE,type="blog")
+                self.read_file(self.POST_DATA_FILE,type="blog")
                 self.user_blog = normalize_dict(self.user_blog)
                 print("dumping to data store")
                 pickle.dump(self.user_blog, open("user_blog.p", "wb"))
@@ -83,7 +95,7 @@ class DataFetch:
                 return user_tags
             else:
                 print("generating <user_tags>")
-                self.read_file(POST_DATA_FILE,type="tags")
+                self.read_file(self.POST_DATA_FILE,type="tags")
                 self.user_tags = normalize_dict(self.user_tags)
                 print("dumping to data store")
                 pickle.dump(self.user_tags, open("user_tags.p", "wb"))
@@ -91,10 +103,27 @@ class DataFetch:
                 return self.user_tags
 
 
+        elif datafile == "user_language.p":
+            if os.path.isfile("user_language.p"):
+                print("loading <user_language> from datastore")
+                user_language = pickle.load(open("user_language.p", "rb"))
+                print("data loaded")
+                return user_language
+            else:
+                print("generating <user_language>")
+                self.read_file(self.POST_DATA_FILE,type="tags")
+                self.user_language = normalize_dict(self.user_language)
+                print("dumping to data store")
+                pickle.dump(self.user_language, open("user_language.p", "wb"))
+                print("data dumped")
+                return self.user_language
+
+
     def read_file(self, filename, type):
         f = open(filename, 'r')
         strf = f.read()
         strarr = strf.split('\n')
+        NVAL = self.NVAL
         if NVAL:
             strarr = strarr[:NVAL]
         #self.file_parse(strarr)
@@ -113,10 +142,18 @@ class DataFetch:
             blog_id = v["blog"]
             author = v["author"]
             tags = v["tags"]
+            language = v["language"]
+
+            self.posts_dict[post_id] = {}
+            #self.posts_dict[post_id]["blog"] = blog_id
+            #self.posts_dict[post_id]["author"] = author
+            #self.posts_dict[post_id]["tags"] = tags
+            self.posts_dict[post_id] = v
 
             self.post_list.add(post_id)
             self.blog_list.add(blog_id)
             self.author_list.add(author)
+
 
             for i in tags:
                 tag = lower(i)
@@ -125,6 +162,11 @@ class DataFetch:
             users = v["likes"]
             for el in users:
                 uid = el["uid"]
+
+                # Create test files
+                #if random.randint(1,10)>8:
+                    # Add entry into test list
+                #    self.test_sample.append((uid,post_id,1))
 
                 if type=="blog":
 
@@ -136,6 +178,17 @@ class DataFetch:
                     else:
                         self.user_blog[uid] = {}
                         self.user_blog[uid][blog_id] = 1
+
+                elif type=="language":
+
+                    if(self.user_language.has_key(uid)):
+                        if language in self.user_language[uid]:
+                            self.user_language[uid][language]+=1
+                        else:
+                            self.user_language[uid][language] = 1
+                    else:
+                        self.user_language[uid] = {}
+                        self.user_language[uid][language] = 1
 
                 elif type=="author":
 
@@ -169,6 +222,41 @@ class DataFetch:
                             except Exception,e:
                                 pass
 
+        # Put posts_dict into a pickle
+        pickle.dump(self.posts_dict, open("posts_dict.p", "wb"))
+
+
+
+
+
+
+    def create_post_dict(self, filename):
+        f = open(filename, 'r')
+        strf = f.read()
+        strarr = strf.split('\n')
+
+        st1 = strarr[:200]
+        posts_dict = {}
+        for i,v in enumerate(st1):
+            # Extract elements from json here.
+            try:
+                v = json.loads(v)
+            except:
+                continue
+
+            post_id = v["post_id"]
+            blog_id = v["blog"]
+            author = v["author"]
+            tags = v["tags"]
+
+            posts_dict[post_id] = {}
+            posts_dict[post_id]["blog"] = blog_id
+            posts_dict[post_id]["author"] = author
+            posts_dict[post_id]["tags"] = tags
+
+        pickle.dump(posts_dict, open("posts_dict_complete.p", "wb"))
+
+
 
 
     def mat_initiate(self, column_list):
@@ -186,7 +274,13 @@ class DataFetch:
         print len(self.author_list)
 
 
-    pass
+    def write_test_to_file(self):
+        filename = "test_sample.txt"
+        f = open(filename, "w")
+        for (i,j,l) in self.test_sample:
+            f.write(str(i) + " " + str(j) + " " + str(l))
+            f.write("\n")
+
 
 
 if __name__ == "__main__":
@@ -200,13 +294,20 @@ if __name__ == "__main__":
 
     c = DataFetch()
     #c.read_file(POST_DATA_FILE)
+
     t1 = datetime.now()
-    data_dict = c.load_data(USER_TAGS)
+    c.create_post_dict(POST_DATA_FILE)
+
+    #data_dict = c.load_data(USER_TAGS)
     #normal_dict = normalize_dict(data_dict)
     t2 = datetime.now()
-    for k,v in data_dict.iteritems():
-        print k
-        print v
-    print len(data_dict)
+    #for k,v in data_dict.iteritems():
+    #    print k
+    #    print v
+    #print len(data_dict)
     print "time taken" + str(t2-t1)
+
+    #c.write_test_to_file()
+
+    #print c.posts_dict
     #c.print_lists()

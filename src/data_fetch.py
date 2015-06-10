@@ -231,8 +231,8 @@ class DataFetch:
                                 except Exception,e:
                                     pass
 
-             # Put tests into a pickle
-            pickle.dump(self.test_sample, open("test_sample.p", "wb"))
+        # Put tests into a pickle
+        pickle.dump(self.test_sample, open("test_sample.p", "wb"))
 
 
 

@@ -1,0 +1,24 @@
+### This file just discusses the approach to be followed in the
+# In train posts structure, we have different variables for every post.
+
+First level filter: language
+
+Quantitative estimates from user's usage history relation with
+author and blog
+
+When traversing through train users, we do have blog id but we don't have author id. In order to have post mapping
+with blog and author, either we can traverse through train posts first and build a hash map.
+
+We can look into this later during execution issues.
+
+So after filtering through language,
+we create a user relation to posts with liked blogs (and liked authors).
+This gives a set of posts that relate with user history.
+
+Second thing we need from user history is probably ngram likeliness matrix.
+This spans over tags, blogname and post title of liked posts.
+First collect a structure for dominant words in these posts combined.
+Then explore relation with this structure in testing time post. This gives some measure of relation
+
+At this stage we can get a good recall by using top score posts using both approaches
+To create a better precision, we now need to run this approach through some learning process

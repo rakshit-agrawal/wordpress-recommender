@@ -36,7 +36,6 @@ def mean_avg_p(test_file, true_file):
 
     for line in test.readlines():
         user, item, purchase, ranking = line.split()
-        #user, item, ranking = line.split() # lena mode
         if user_purchase_dict_test.get(user):
             user_purchase_dict_test[user].append((item, ranking))
         else:

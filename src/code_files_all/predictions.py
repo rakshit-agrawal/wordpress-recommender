@@ -30,9 +30,9 @@ class Predictions:
 
         self.test_sample = pickle.load(open(TEST_SAMPLE_FILE,"rb"))
 
-        self.a_coef = 0.45
-        self.b_coef = 0.10
-        self.t_coef = 0.20
+        self.a_coef = 0.33
+        self.b_coef = 0.33
+        self.t_coef = 0.33
 
 
     def logistic(self):
@@ -68,7 +68,7 @@ class Predictions:
 
     def no_logic(self, test_sample):
         # Operate on values without any modification of weights.
-        threshold = 0.012
+        threshold = 0.00072
         predicted_list = []
 
         for (i,j,b,a,t,l) in test_sample:
@@ -228,7 +228,7 @@ if __name__=="__main__":
 
     map_val = apk(actual,predicted,100)
 
-    print "Mean Average Precision at 100"
+    print "Mean Average Precision at 10"
     print map_val
 
     fscore = fscore(actual, predicted)
